@@ -1,7 +1,7 @@
 import { prisma } from "../config/prisma";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-
+import { Request, Response } from "express";
 
 const JWT_SECRET = process.env.JWT_SECRET as string | undefined;
 
@@ -14,7 +14,7 @@ if (!JWT_SECRET) {
 export const signup = async(name: string,email:string,password:string)=>{
 
     const existingUser = await prisma.user.findUnique({where:{email}});
-    
+
     if(existingUser) throw new Error("Email already registered");
 
 
@@ -55,3 +55,4 @@ export const login = async(email:string,password:string)=>{
         user:{id:user.id,name:user.name,email:user.email}
     };
 }
+

@@ -5,7 +5,7 @@ Backend-swapper is a Node.js/TypeScript backend API for user authentication, bui
 ## Features
 
 - User signup and login with hashed passwords
-- JWT-based authentication
+- JWT-based authentication (token stored in HTTP-only cookie)
 - Prisma ORM with PostgreSQL
 - Modular code structure
 
@@ -23,6 +23,7 @@ Backend-swapper is a Node.js/TypeScript backend API for user authentication, bui
 │   ├── controllers/
 │   │   └── authController.ts
 │   ├── middlewares/
+│   │   └── authMiddleware.ts
 │   ├── routes/
 │   │   └── authRoutes.ts
 │   ├── services/
@@ -69,9 +70,18 @@ Backend-swapper is a Node.js/TypeScript backend API for user authentication, bui
    npx prisma migrate deploy
    ```
 
-5. **Start the server:**
+5. **Generate the Prisma client (required if you change schema or switch OS):**
+   ```sh
+   npx prisma generate
+   ```
+
+6. **Start the server:**
    ```sh
    npx ts-node-dev src/index.ts
+   ```
+   Or, if you are running the compiled code:
+   ```sh
+   node dist/index.js
    ```
 
 ## API Endpoints
@@ -79,12 +89,51 @@ Backend-swapper is a Node.js/TypeScript backend API for user authentication, bui
 ### Auth
 
 - `POST /api/auth/signup`
-  - Body: `{ "name": string, "email": string, "password": string }`
-  - Response: `{ "user": { "token": string, "user": { ... } } }`
+  - **Body:**  
+    ```json
+    { "name": "string", "email": "string", "password": "string" }
+    ```
+  - **Response:**  
+    ```json
+    { "user": { "id": "string", "name": "string", "email": "string" } }
+    ```
+  - **Notes:**  
+    - Sets a `token` cookie (HTTP-only, 7 days).
 
 - `POST /api/auth/login`
-  - Body: `{ "email": string, "password": string }`
-  - Response: `{ "result": { "token": string, "user": { ... } } }`
+  - **Body:**  
+    ```json
+    { "email": "string", "password": "string" }
+    ```
+  - **Response:**  
+    ```json
+    { "user": { "id": "string", "name": "string", "email": "string" } }
+    ```
+  - **Notes:**  
+    - Sets a `token` cookie (HTTP-only, 7 days).
+
+- `POST /api/auth/logout`
+  - **Response:**  
+    ```json
+    { "message": "Logged out successfully" }
+    ```
+  - **Notes:**  
+    - Clears the `token` cookie.
+
+## Troubleshooting
+
+- **Prisma Client could not locate the Query Engine for runtime "windows":**
+  - Make sure your `prisma/schema.prisma` includes:
+    ```prisma
+    generator client {
+      provider = "prisma-client-js"
+      binaryTargets = ["native", "windows"]
+    }
+    ```
+  - Then run:
+    ```sh
+    npx prisma generate
+    ```
 
 ## License
 
