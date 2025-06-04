@@ -1,11 +1,13 @@
 # Backend-swapper
 
-Backend-swapper is a Node.js/TypeScript backend API for user authentication, built with Express, Prisma, PostgreSQL, and JWT.
+Backend-swapper is a Node.js/TypeScript backend API for user authentication, session management, and feedback, built with Express, Prisma, PostgreSQL, and JWT.
 
 ## Features
 
 - User signup and login with hashed passwords
 - JWT-based authentication (token stored in HTTP-only cookie)
+- Session scheduling and management
+- User feedback system (rate and comment on sessions)
 - Prisma ORM with PostgreSQL
 - Modular code structure
 
@@ -21,13 +23,19 @@ Backend-swapper is a Node.js/TypeScript backend API for user authentication, bui
 │   ├── config/
 │   │   └── prisma.ts
 │   ├── controllers/
-│   │   └── authController.ts
+│   │   ├── authController.ts
+│   │   ├── feedbackController.ts
+│   │   └── sessionController.ts
 │   ├── middlewares/
 │   │   └── authMiddleware.ts
 │   ├── routes/
-│   │   └── authRoutes.ts
+│   │   ├── authRoutes.ts
+│   │   ├── feedbackRoutes.ts
+│   │   └── sessionRoutes.ts
 │   ├── services/
-│   │   └── authService.ts
+│   │   ├── authService.ts
+│   │   ├── feedbackService.ts
+│   │   └── sessionService.ts
 │   └── utils/
 │       └── jwt.ts
 ├── .env
@@ -119,6 +127,68 @@ Backend-swapper is a Node.js/TypeScript backend API for user authentication, bui
     ```
   - **Notes:**  
     - Clears the `token` cookie.
+
+### Sessions
+
+- `POST /api/sessions/`
+  - **Body:**  
+    ```json
+    {
+      "teacherId": "string",
+      "learnerId": "string",
+      "subject": "string",
+      "startTime": "ISODateString",
+      "endTime": "ISODateString"
+    }
+    ```
+  - **Response:**  
+    ```json
+    { "session": { ...sessionFields } }
+    ```
+
+- `GET /api/sessions/:userId`
+  - **Response:**  
+    ```json
+    { "sessions": [ ... ] }
+    ```
+
+- `PATCH /api/sessions/status`
+  - **Body:**  
+    ```json
+    { "sessionId": "string", "status": "SCHEDULED" | "COMPLETED" | "CANCELLED" }
+    ```
+  - **Response:**  
+    ```json
+    { "session": { ...updatedSessionFields } }
+    ```
+
+### Feedback
+
+- `POST /api/feedback/`
+  - **Body:**  
+    ```json
+    {
+      "sessionId": "string",
+      "fromUserId": "string",
+      "toUserId": "string",
+      "rating": number,
+      "comment": "string"
+    }
+    ```
+  - **Response:**  
+    ```json
+    { ...feedbackFields }
+    ```
+
+- `GET /api/feedback/:userId`
+  - **Response:**  
+    ```json
+    {
+      "feedbacks": [
+        { "comment": "string" }
+      ]
+    }
+    ```
 
 ## Troubleshooting
 

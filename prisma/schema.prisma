@@ -21,6 +21,50 @@ model User{
   name String
   email String @unique
   password String
-  createdAt DateTime @default (now())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt @default(now())
+
+  taughtSessios Session[] @relation("TaughtSessions")
+  learntSessions Session[] @relation("LearntSessions")
+  
+
+  givenFeedback Feedback[] @relation("GivenFeedback")
+  receivedFeedback Feedback[] @relation("ReceivedFeedback")
 }
 
+model Session{
+  id String  @id      @default(cuid())
+  teacherId String
+  learnerId String
+  subject String
+  startTime DateTime
+  endTime DateTime
+  videoUrl String?
+  status SessionStatus @default(SCHEDULED)
+  createdAt DateTime @default(now())
+
+  teacher User @relation("TaughtSessions",fields:[teacherId],references:[id])
+  learner User @relation("LearntSessions",fields:[learnerId],references:[id])
+  feedbacks Feedback[]
+}
+
+enum SessionStatus{
+  SCHEDULED
+  COMPLETED
+  CANCELLED
+}
+
+model Feedback{
+  id String @id @default(cuid())
+  sessionId String
+  fromUserId String
+  toUserId String
+  rating Int
+  comment String
+  createdAt DateTime @default(now())
+
+  session Session @relation(fields:[sessionId],references:[id])
+  fromUser User @relation("GivenFeedback", fields: [fromUserId], references: [id])
+  toUser User @relation("ReceivedFeedback", fields: [toUserId], references: [id])
+
+}
